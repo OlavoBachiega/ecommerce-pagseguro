@@ -3,8 +3,8 @@
 use \Hcode\Page;
 use \Hcode\Model\User;
 use \Hcode\PagSeguro\Config;
-use \Hcode\Model\Order;
 use \Hcode\PagSeguro\Transporter;
+use \Hcode\Model\Order;
 
 $app->get("/payment", function(){
 
@@ -29,7 +29,9 @@ $app->get("/payment", function(){
         "years"=>$years,
         "pagseguro"=>[
             "urlJS"=>Config::getUrlJS(),
-            "id"=>Transporter::createSession()
+            "id"=>Transporter::createSession(),
+            "maxInstallmentNoInterest"=>Config::MAX_INSTALLMENT_NO_INTEREST,
+            "maxInstallment"=>Config::MAX_INSTALLMENT
         ]
     ]);
 });

@@ -16,7 +16,7 @@ class Transporter {
 
         $xml = simplexml_load_string($res->getBody()->getContents());
 
-        return ((string)$xml->id);
+        return ((string) $xml->id);
 
     }
 

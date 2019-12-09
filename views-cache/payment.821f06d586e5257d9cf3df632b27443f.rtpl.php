@@ -129,6 +129,8 @@
 
                                                     <form action="/payment/credit" class="checkout" method="post" name="checkout" style="padding:10px;" id="form-credit">
 
+                                                        <input type="hidden" name="brand" id="brand_field">
+
                                                         <div class="row">
                                                             <div class="col-sm-4">
                                                                 <div class="form-row form-row-wide address-field validate-required">
@@ -259,14 +261,14 @@
     <img src="https://stc.pagseguro.uol.com.br/{{image}}" alt="{{name}}" style="float:left; margin-right:4px;">
 </script>
 <script id="tpl-installment-free" type="text/x-handlebars-template">
-    <option>{{quantity}}x de R${{installmentAmount}} sem juros</option>
+    <option>{{quantity}}x de {{installmentAmount}} sem juros</option>
 </script>
 <script id="tpl-installment" type="text/x-handlebars-template">
-    <option>{{quantity}}x de R${{installmentAmount}} com juros (R${{totalAmount}})</option>
+    <option>{{quantity}}x de {{installmentAmount}} com juros ({{totalAmount}})</option>
 </script>
 <script src="<?php echo htmlspecialchars( $pagseguro["urlJS"], ENT_COMPAT, 'UTF-8', FALSE ); ?>"></script>
 <script type="text/javascript">
-PagSeguroDirectPayment.SetSessionId('<?php echo htmlspecialchars( $pagseguro["id"], ENT_COMPAT, 'UTF-8', FALSE ); ?>');
+PagSeguroDirectPayment.setSessionId('<?php echo htmlspecialchars( $pagseguro["id"], ENT_COMPAT, 'UTF-8', FALSE ); ?>');
 </script>
 <script>
 scripts.push(function(){
@@ -283,28 +285,28 @@ scripts.push(function(){
         amount: parseFloat("<?php echo htmlspecialchars( $order["vltotal"], ENT_COMPAT, 'UTF-8', FALSE ); ?>"),
         success: function(response) {
             
-            var tplDebit = Handlesbars.compile($("#tpl-payment-debit").html());
-            var tplCredit = Handlesbar.compile($("#tpl-payment-credit").html());
+            var tplDebit = Handlebars.compile($("#tpl-payment-debit").html());
+            var tplCredit = Handlebars.compile($("#tpl-payment-credit").html());
 
-            $.each(response.PaymentMethods.ONLINE_DEBIT.options, function(index, option){
+            $.each(response.paymentMethods.ONLINE_DEBIT.options, function(index, option){
 
                 $("#tab-debito .contents").append(tplDebit({
                     value:option.name,
                     image:option.images.MEDIUM.path,
-                    text:option.displayName
+                    text:option.displayName 
                 }));
 
             });
 
-            $.each(response.PaymentMethods.CREDIT_CARD.options, function(index, option){
-
+            $.each(response.paymentMethods.CREDIT_CARD.options, function(index, option){
+                
                 $("#tab-credito .contents").append(tplCredit({
                     name:option.name,
                     image:option.images.MEDIUM.path
                 }));
 
             });
-
+            
             $("#loading").hide();
 
             $("#tabs-methods .nav-link:first").tab("show");
@@ -313,7 +315,7 @@ scripts.push(function(){
 
         },
         error: function(response) {
-
+            
             var errors = [];
 
             for (var code in response.errors)
@@ -331,7 +333,105 @@ scripts.push(function(){
 
         }
     });
+    
+    $("#number_field").on("change", function(){
 
+        var value = $(this).val();
+
+        if (value.length >= 6) {
+
+            PagSeguroDirectPayment.getBrand({
+                cardBin: value.substring(0, 6),
+                success: function(response) {
+
+                    $("#brand_field").val(response.brand.name);
+
+                    PagSeguroDirectPayment.getInstallments({
+                        amount: parseFloat("<?php echo htmlspecialchars( $order["vltotal"], ENT_COMPAT, 'UTF-8', FALSE ); ?>"),
+                        brand: response.brand.name,
+                        maxInstallmentNoInterest: parseInt("<?php echo htmlspecialchars( $pagseguro["maxInstallmentNoInterest"], ENT_COMPAT, 'UTF-8', FALSE ); ?>"),
+                        success: function(response) {
+
+                            $("#installments_field").html('<option disabled="disabled"></option>');
+
+                            var tplInstallmentFree = Handlebars.compile($("#tpl-installment-free").html());
+                            var tplInstallment = Handlebars.compile($("#tpl-installment").html());
+
+                            var formatReal = {
+                                minimumFractionDigits:2,
+                                style:"currency",
+                                currency:"BRL"
+                            };
+
+                            $.each(response.installments[$("#brand_field").val()], function(index, installment){
+
+                                if (parseInt("<?php echo htmlspecialchars( $pagseguro["maxInstallment"], ENT_COMPAT, 'UTF-8', FALSE ); ?>") > index) {
+
+                                    if (installment.interestFree === true) {
+
+                                        var $option = $(tplInstallmentFree({
+                                            quantity:installment.quantity,
+                                            installmentAmount:installment.installmentAmount.toLocaleString('pt-BR', formatReal)
+                                        }));
+
+                                    } else {
+
+                                        var $option = $(tplInstallment({
+                                            quantity:installment.quantity,
+                                            installmentAmount:installment.installmentAmount.toLocaleString('pt-BR', formatReal),
+                                            totalAmount:installment.totalAmount.toLocaleString('pt-BR',formatReal)
+                                        }));
+
+                                    }
+
+                                    $option.data("installment", installment);
+
+                                    $("#installments_field").append($option);
+
+                                }
+                            });
+
+                        },
+                        error: function(response) {
+
+                            var errors = [];
+
+                            for (var code in response.errors)
+                            {
+
+                                errors.push(response.errors[code]);
+
+                            }
+
+                            showError(errors.toString());
+
+                        },
+                        complete: function(response) {
+                            // tratamento comum para todas chamadas
+                        }
+                    });
+
+                },
+                error: function(response) {
+
+                    var errors = [];
+
+                    for (var code in response.errors)
+                    {
+
+                        errors.push(response.errors[code]);
+
+                    }
+
+                    showError(errors.toString());
+                    
+                },
+                complete: function(response) {
+                    // tratamento comum para todas as chemadas
+                }
+            });
+        }
+    });
 });
 
 </script>
