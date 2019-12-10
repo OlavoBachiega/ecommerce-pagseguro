@@ -280,8 +280,9 @@ scripts.push(function(){
         $("#alert-error").removeClass("hide");
 
     }
+
     PagSeguroDirectPayment.getPaymentMethods({
-        amount: 1500, // parseFloat("<?php echo htmlspecialchars( $order["vltotal"], ENT_COMPAT, 'UTF-8', FALSE ); ?>"),
+        amount: parseFloat("<?php echo htmlspecialchars( $order["vltotal"], ENT_COMPAT, 'UTF-8', FALSE ); ?>"),
         success: function(response) {
             
             var tplDebit = Handlebars.compile($("#tpl-payment-debit").html());
@@ -305,7 +306,7 @@ scripts.push(function(){
                 }));
 
             });
-
+            
             $("#loading").hide();
 
             $("#tabs-methods .nav-link:first").tab("show");
@@ -342,16 +343,16 @@ scripts.push(function(){
             PagSeguroDirectPayment.getBrand({
                 cardBin: value.substring(0, 6),
                 success: function(response) {
-                    
+
                     $("#brand_field").val(response.brand.name);
-                    
+
                     PagSeguroDirectPayment.getInstallments({
-                        amount: 1500, // parseFloat("<?php echo htmlspecialchars( $order["vltotal"], ENT_COMPAT, 'UTF-8', FALSE ); ?>"),
+                        amount: parseFloat("<?php echo htmlspecialchars( $order["vltotal"], ENT_COMPAT, 'UTF-8', FALSE ); ?>"),
                         brand: response.brand.name,
                         maxInstallmentNoInterest: parseInt("<?php echo htmlspecialchars( $pagseguro["maxInstallmentNoInterest"], ENT_COMPAT, 'UTF-8', FALSE ); ?>"),
                         success: function(response) {
-                            
-                            $("#Installments_fields").html('<option disabled="disabled"></option>');
+
+                            $("#installments_field").html('<option disabled="disabled"></option>');
 
                             var tplInstallmentFree = Handlebars.compile($("#tpl-installment-free").html());
                             var tplInstallment = Handlebars.compile($("#tpl-installment").html());
@@ -362,7 +363,7 @@ scripts.push(function(){
                                 currency:"BRL"
                             };
 
-                            $.each(response.installments[$("#brand_field").va()], function(index, installment){
+                            $.each(response.installments[$("#brand_field").val()], function(index, installment){
 
                                 if (parseInt("<?php echo htmlspecialchars( $pagseguro["maxInstallment"], ENT_COMPAT, 'UTF-8', FALSE ); ?>") > index) {
 
@@ -388,6 +389,7 @@ scripts.push(function(){
                                     $("#installments_field").append($option);
 
                                 }
+
                             });
 
                         },
@@ -428,9 +430,101 @@ scripts.push(function(){
                 complete: function(response) {
                     // tratamento comum para todas as chemadas
                 }
-            });
+
+            }); 
+
         }
+
     });
+
+    function isValidCPF(number) {
+        var sum;
+        var rest;
+        sum = 0;
+        if (number == "00000000000") return false;
+
+        for (i=1; i<=9; i++) sum = sum + parseInt(number.substring(i-1, i)) * (11 - i);
+        rest = (sum * 10) % 11;
+
+        if ((rest == 10) || (rest == 11))  rest = 0;
+        if (rest != parseInt(number.substring(9, 10)) ) return false;
+
+        sum = 0;
+        for (i = 1; i <= 10; i++) sum = sum + parseInt(number.substring(i-1, i)) * (12 - i);
+        rest = (sum * 10) % 11;
+
+        if ((rest == 10) || (rest == 11))  rest = 0;
+        if (rest != parseInt(number.substring(10, 11) ) ) return false;
+        return true;
+    }
+
+    $("#form-credit").on("submit", function(e){
+
+        e.preventDefault();
+
+        if (!isValidCPF($("#form-credit [name=cpf]").val())) {
+            showError("Este número de CPF não é válido.");
+            return false;
+        }
+
+        $("#form-credit [type-submit]").attr("disabled", "disabled");
+
+        var FormData = $(this).serializeArray();
+
+        var params = {};
+
+        $.each(FormData, function(index, field){
+
+            params[field.name] = field.value;
+
+        });
+
+        PagSeguroDirectPayment.createCardToken({
+            cardNumber:params.number,
+            cvv:params.cvv,
+            expirationMonth:params.month,
+            expirationYear:params.year,
+            success: function(response) {
+
+                params.token = response.card.token;
+                params.hash = PagSeguroDirectPayment.getSenderHash();
+                
+                $.post(
+                    "/payment/credit",
+                    $.param(params),
+                    function(r){
+
+                        console.log(r);
+
+                    }
+
+                );
+
+            },
+            error: function(response) {
+
+                var errors = [];
+
+                for (var code in response.errors)
+                {
+
+                    errors.push(response.errors[code]);
+
+                }
+
+                showError(errors.toString());
+
+            },
+            complete: function(response) {
+
+                $("#form-credit [type-submit]").removeAttr("disabled"); 
+
+            }
+
+        });
+
+    });
+
 });
 
 </script>

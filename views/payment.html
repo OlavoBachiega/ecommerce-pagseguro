@@ -485,10 +485,20 @@ scripts.push(function(){
             expirationMonth:params.month,
             expirationYear:params.year,
             success: function(response) {
+
+                params.token = response.card.token;
+                params.hash = PagSeguroDirectPayment.getSenderHash();
                 
-                console.log("TOKEN", response.card.token);
-                Console.log("HASH", PagSeguroDirectPayment.getSenderHash());
-                console.log("PARAMS", params);
+                $.post(
+                    "/payment/credit",
+                    $.param(params),
+                    function(r){
+
+                        console.log(r);
+
+                    }
+
+                );
 
             },
             error: function(response) {
