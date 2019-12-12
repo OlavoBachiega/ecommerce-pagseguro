@@ -3,6 +3,8 @@
 namespace Hcode\PagSeguro;
 
 use DateTime;
+use DOMDocument;
+use DOMElement;
 use Exception;
 
 class Sender {
@@ -64,8 +66,8 @@ class Sender {
         $sender = $dom->createElement("sender");
         $sender = $dom->appendChild($sender);
 
-        $nome = $dom->createElement("nome", $this->nome);
-        $nome = $sender->appendChild($nome);
+        $name = $dom->createElement("name", $this->name);
+        $name = $sender->appendChild($name);
 
         $email = $dom->createElement("email", $this->email);
         $email = $sender->appendChild($email);
@@ -77,11 +79,11 @@ class Sender {
         $documents = $sender->appendChild($documents);
 
         $cpf = $this->cpf->getDOMElement();
-        $cpf = $dom->importNome($cpf, true);
+        $cpf = $dom->importNode($cpf, true);
         $cpf = $documents->appendChild($cpf);
 
         $phone = $this->phone->getDOMElement();
-        $phone = $dom->importNome($phone, true);
+        $phone = $dom->importNode($phone, true);
         $phone = $documents->appendChild($phone);
 
         $hash = $dom->createElement("hash", $this->hash);
