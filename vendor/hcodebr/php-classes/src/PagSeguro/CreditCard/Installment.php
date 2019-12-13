@@ -2,6 +2,8 @@
 
 namespace Hcode\PagSeguro\CreditCard;
 
+use DOMDocument;
+use DOMElement;
 use Exception;
 use Hcode\PagSeguro\Config;
 
@@ -19,14 +21,14 @@ class Installment {
         if ($quantity < 1 || $quantity > Config::MAX_INSTALLMENT)
         {
 
-            throw new Exception("Número de parcelas inválida.")
+            throw new Exception("Número de parcelas inválida.");
 
         }
         
         if ($value <= 0)
         {
 
-            throw new Exception("Valor total inválido.")
+            throw new Exception("Valor total inválido.");
 
         }
 
