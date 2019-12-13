@@ -47,12 +47,9 @@ class Shipping {
         $shipping = $dom->createElement("shipping");
         $shipping = $dom->appendChild($shipping);
 
-        $documents = $dom->createElement("documents", $this->documents);
-        $documents = $shipping->appendChild($documents);
-
         $address = $this->address->getDOMElement();
         $address = $dom->importNode($address, true);
-        $address = $documents->appendChild($address);
+        $address = $shipping->appendChild($address);
 
         $cost = $dom->createElement("cost", number_format($this->cost, 2, ".", ""));
         $cost = $shipping->appendChild($cost);
