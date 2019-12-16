@@ -228,7 +228,7 @@ class Order extends Model {
 
 		$address = new Address();
 
-		$address->setDate($this->getValues());
+		$address->setData($this->getValues());
 
 		return $address;
 

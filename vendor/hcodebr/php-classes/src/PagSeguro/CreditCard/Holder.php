@@ -52,7 +52,7 @@ class Holder {
         $birthDate = $dom->createElement("birthDate", $this->birthDate->format("d/m/Y"));
         $birthDate = $holder->appendChild($birthDate);
 
-        $documents = $dom->createElement("documents", $this->documents);
+        $documents = $dom->createElement("documents");
         $documents = $holder->appendChild($documents);
 
         $cpf = $this->cpf->getDOMElement();

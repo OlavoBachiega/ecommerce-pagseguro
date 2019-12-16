@@ -75,7 +75,7 @@ class Sender {
         $bornDate = $dom->createElement("bornDate", $this->bornDate->format("d/m/Y"));
         $bornDate = $sender->appendChild($bornDate);
 
-        $documents = $dom->createElement("documents", $this->documents);
+        $documents = $dom->createElement("documents");
         $documents = $sender->appendChild($documents);
 
         $cpf = $this->cpf->getDOMElement();

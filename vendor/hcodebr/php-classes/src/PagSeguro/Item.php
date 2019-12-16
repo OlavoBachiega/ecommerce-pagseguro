@@ -21,7 +21,7 @@ class Item {
     )
     {
         
-        if (!$id || $id > 0)
+        if (!$id || $id < 0)
         {
 
             throw new Exception("Informe o ID do item.");
@@ -35,14 +35,14 @@ class Item {
 
         }
 
-        if (!$amount || $amount > 0)
+        if (!$amount || $amount < 0)
         {
 
             throw new Exception("Informe o valor total do item.");
 
         }
 
-        if (!$quantity || $quantity > 0)
+        if (!$quantity || $quantity < 0)
         {
 
             throw new Exception("Informe a quantidade do item.");

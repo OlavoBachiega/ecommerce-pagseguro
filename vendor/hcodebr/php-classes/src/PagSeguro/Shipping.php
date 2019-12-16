@@ -21,7 +21,7 @@ class Shipping {
         Address $address,
         float $cost,
         int $type,
-        bool $addressRequired
+        bool $addressRequired = true    
     )
     {
         
@@ -57,8 +57,8 @@ class Shipping {
         $type = $dom->createElement("type", $this->type);
         $type = $shipping->appendChild($type);
 
-        $addressRequerid = $dom->createElement("addressRequerid", ($this->addressRequerid ? "true" : "false"));
-        $addressRequerid = $shipping->appendChild($addressRequerid);
+        $addressRequired = $dom->createElement("addressRequired", ($this->addressRequired ? "true" : "false"));
+        $addressRequired = $shipping->appendChild($addressRequired);
 
         return $shipping;
 
