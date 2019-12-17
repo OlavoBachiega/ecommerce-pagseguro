@@ -70,8 +70,6 @@ $app->post('/payment/credit', function(){
 
     $dom = new DOMDocument();
 
-    $test = $creditCard->getDOMElement();
-
     $payment = new Payment($order->getidorder(), $sender, $shipping);
 
     foreach($cart->getProducts() as $product)
