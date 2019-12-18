@@ -16,6 +16,21 @@ use Hcode\PagSeguro\Payment;
 use Hcode\PagSeguro\Sender;
 use Hcode\PagSeguro\Shipping;
 
+$app->get('/payment/success', function(){
+
+    User::verifyLogin(false);
+
+    $order = new Order();
+
+    $order->getFromSession();
+
+    $page = new Page();
+
+    $page->setTpl('payment-success', [
+        'order'=>$order->getValues()
+    ]);
+});
+
 $app->post('/payment/credit', function(){
 
     User::verifyLogin(false);
@@ -93,7 +108,7 @@ $app->post('/payment/credit', function(){
     echo json_encode([
         'success'=>true
     ]);
-    
+
 });
 
 $app->get("/payment", function(){
